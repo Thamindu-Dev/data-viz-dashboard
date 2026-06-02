@@ -1,0 +1,7 @@
+{
+  "name": "data-viz-dashboard",
+  "label": "Data Viz Dashboard",
+  "icon": "chart-bar",
+  "tab": { "path": "/data-viz-dashboard" },
+  "entry": "dist/index.js"
+}

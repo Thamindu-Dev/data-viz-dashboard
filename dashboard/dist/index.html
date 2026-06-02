@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic OS Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background-color: #0a0a0a;
+            color: #e5e7eb;
+            font-family: 'Inter', sans-serif;
+        }
+        .widget-glass {
+            background: rgba(23, 23, 23, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+        }
+        .neon-border {
+            border: 1px solid #00f2ff;
+            box-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+        }
+        .terminal-container {
+            height: 500px;
+            background: #000;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .btn-action {
+            transition: all 0.2s ease;
+            background: #1a1a1a;
+            border: 1px solid #333;
+        }
+        .btn-action:hover {
+            background: #2a2a2a;
+            border-color: #00f2ff;
+            box-shadow: 0 0 8px rgba(0, 242, 255, 0.5);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="p-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold tracking-tighter text-white">AGENTIC<span class="text-cyan-400">OS</span></h1>
+            <p class="text-gray-400 text-sm">Real-time System Intelligence</p>
+        </div>
+        <div id="status-pill" class="px-3 py-1 rounded-full text-xs font-medium bg-red-900/30 text-red-400 border border-red-500/50">
+            Disconnected
+        </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="grid grid-cols-12 gap-6">
+        
+        <!-- Left Column: Telemetry -->
+        <div class="col-span-12 lg:col-span-4 space-y-6">
+            <!-- CPU Widget -->
+            <div class="widget-glass p-5">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-sm font-semibold text-gray-300 uppercase tracking-wider">CPU Load</h3>
+                    <span id="cpu-val" class="text-cyan-400 font-mono font-bold">0%</span>
+                </div>
+                <div style="position: relative; height: 150px;">
+                    <canvas id="cpuChart"></canvas>
+                </div>
+            </div>
+
+            <!-- RAM Widget -->
+            <div class="widget-glass p-5">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-sm font-semibold text-gray-300 uppercase tracking-wider">Memory Usage</h3>
+                    <span id="ram-val" class="text-cyan-400 font-mono font-bold">0%</span>
+                </div>
+                <div style="position: relative; height: 150px;">
+                    <canvas id="ramChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Disk Widget -->
+            <div class="widget-glass p-5">
+                <h3 class="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-4">Disk Storage</h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between text-xs">
+                        <span class="text-gray-400">Used / Total</span>
+                        <span id="disk-stat" class="text-gray-200 font-mono">0 / 0 GB</span>
+                    </div>
+                    <div class="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
+                        <div id="disk-bar" class="bg-cyan-500 h-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Center/Right: Terminal & Actions -->
+        <div class="col-span-12 lg:col-span-8 space-y-6">
+            <!-- Live Terminal -->
+            <div class="widget-glass p-4">
+                <div class="flex justify-between items-center mb-3">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        <span class="ml-2 text-xs font-mono text-gray-400">bash — root@hermes</span>
+                    </div>
+                    <span class="text-[10px] text-gray-500 uppercase">Real-time Stream</span>
+                </div>
+                <div class="terminal-container">
+                    <iframe id="terminal-frame" src="about:blank"></iframe>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="widget-glass p-5">
+                <h3 class="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-4">Quick Command Center</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <button onclick="sendCmd('update')" class="btn-action p-3 rounded-lg text-xs text-center font-medium text-gray-300">
+                        Update System
+                    </button>
+                    <button onclick="sendCmd('cleanup')" class="btn-action p-3 rounded-lg text-xs text-center font-medium text-gray-300">
+                        Clear Cache
+                    </button>
+                    <button onclick="sendCmd('backup')" class="btn-action p-3 rounded-lg text-xs text-center font-medium text-gray-300">
+                        Run Backup
+                    </button>
+                    <button onclick="sendCmd('restart')" class="btn-action p-3 rounded-lg text-xs text-center font-medium text-gray-300">
+                        Restart Agent
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = `http://${window.location.hostname}:5000`; // Backend port
+        const TERMINAL_URL = `http://${window.location.hostname}:7681`;
+        
+        let cpuChart, ramChart;
+        const MAX_DATA_POINTS = 20;
+
+        async function initCharts() {
+            const chartConfig = (label, color) => ({
+                type: 'line',
+                data: {
+                    labels: Array(MAX_DATA_POINTS).fill(''),
+                    datasets: [{
+                        label: label,
+                        data: Array(MAX_DATA_POINTS).fill(0),
+                        borderColor: color,
+                        backgroundColor: color + '22',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { display: false },
+                        y: { min: 0, max: 100, grid: { color: '#222' }, ticks: { color: '#555', font: { size: 10 } } }
+                    }
+                }
+            });
+
+            cpuChart = new Chart(document.getElementById('cpuChart'), chartConfig('CPU %', '#00f2ff'));
+            ramChart = new Chart(document.getElementById('ramChart'), chartConfig('RAM %', '#a855f7'));
+        }
+
+        async function startServices() {
+            try {
+                await fetch(`${API_BASE}/start`, { method: 'POST' });
+                document.getElementById('status-pill').innerText = 'Active';
+                document.getElementById('status-pill').className = 'px-3 py-1 rounded-full text-xs font-medium bg-green-900/30 text-green-400 border border-green-500/50';
+                document.getElementById('terminal-frame').src = TERMINAL_URL;
+            } catch (e) {
+                console.error('Failed to start services:', e);
+            }
+        }
+
+        async function stopServices() {
+            try {
+                await fetch(`${API_BASE}/stop`, { method: 'POST' });
+            } catch (e) {
+                console.error('Failed to stop services:', e);
+            }
+        }
+
+        async function pollTelemetry() {
+            try {
+                // Heartbeat + Telemetry
+                await fetch(`${API_BASE}/heartbeat`, { method: 'POST' });
+                const res = await fetch(`${API_BASE}/telemetry`);
+                const data = await res.json();
+
+                // Update CPU
+                const cpuAvg = data.cpu.overall;
+                document.getElementById('cpu-val').innerText = `${cpuAvg}%`;
+                cpuChart.data.datasets[0].data.shift();
+                cpuChart.data.datasets[0].data.push(cpuAvg);
+                cpuChart.update('none');
+
+                // Update RAM
+                const ramPct = data.ram.percent;
+                document.getElementById('ram-val').innerText = `${ramPct}%`;
+                ramChart.data.datasets[0].data.shift();
+                ramChart.data.datasets[0].data.push(ramPct);
+                ramChart.update('none');
+
+                // Update Disk
+                const diskPct = data.disk.percent;
+                document.getElementById('disk-bar').style.width = `${diskPct}%`;
+                document.getElementById('disk-stat').innerText = `${data.disk.used} / ${data.disk.total} GB`;
+
+            } catch (e) {
+                console.error('Telemetry error:', e);
+            }
+        }
+
+        function sendCmd(cmd) {
+            alert('Command sent to Agent: ' + cmd + '\\n(Integration pending in backend action handlers)');
+        }
+
+        window.onload = async () => {
+            initCharts();
+            await startServices();
+            setInterval(pollTelemetry, 2000);
+        };
+
+        window.onbeforeunload = () => {
+            stopServices();
+        };
+    </script>
+</body>
+</html>
