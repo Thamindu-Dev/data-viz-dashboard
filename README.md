@@ -59,7 +59,7 @@ data-viz-dashboard/
 
 **1. Clone the repository into your Hermes plugins directory:**
 ```bash
-git clone https://github.com/your-username/data-viz-dashboard.git /opt/data/home/.hermes/plugins/data-viz-dashboard
+git clone https://github.com/Thamindu-Dev/data-viz-dashboard.git /opt/data/home/.hermes/plugins/data-viz-dashboard
 ```
 
 **2. Setup the Python Backend:**
