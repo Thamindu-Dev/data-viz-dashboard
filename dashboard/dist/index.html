@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agentic OS Dashboard</title>
+    <title>Data Viz Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -12,55 +13,95 @@
             color: #e5e7eb;
             font-family: 'Inter', sans-serif;
         }
+
         .widget-glass {
             background: rgba(23, 23, 23, 0.8);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 1rem;
         }
+
         .neon-border {
             border: 1px solid #00f2ff;
             box-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
         }
+
         .terminal-container {
             height: 500px;
             background: #000;
             border-radius: 0.5rem;
             overflow: hidden;
         }
+
         iframe {
             width: 100%;
             height: 100%;
             border: none;
         }
+
         .btn-action {
             transition: all 0.2s ease;
             background: #1a1a1a;
             border: 1px solid #333;
         }
+
         .btn-action:hover {
             background: #2a2a2a;
             border-color: #00f2ff;
             box-shadow: 0 0 8px rgba(0, 242, 255, 0.5);
             transform: translateY(-2px);
         }
+        .btn-action:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: rgba(10, 10, 10, 0.95);
+            border: 1px solid #00f2ff;
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
+            color: #e5e7eb;
+            padding: 14px 20px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-family: monospace;
+            max-width: 420px;
+            z-index: 9999;
+            display: none;
+            white-space: pre-wrap;
+            word-break: break-word;
+            animation: slideIn 0.2s ease;
+        }
+        #toast.error { border-color: #ef4444; box-shadow: 0 0 20px rgba(239,68,68,0.2); }
+        #toast.success { border-color: #22c55e; box-shadow: 0 0 20px rgba(34,197,94,0.2); }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
+
 <body class="p-6">
+    <div id="toast"></div>
+
     <!-- Header -->
     <div class="flex justify-between items-center mb-8">
         <div>
-            <h1 class="text-3xl font-bold tracking-tighter text-white">AGENTIC<span class="text-cyan-400">OS</span></h1>
+            <h1 class="text-3xl font-bold tracking-tighter text-white">Data Viz Dashboard</h1>
             <p class="text-gray-400 text-sm">Real-time System Intelligence</p>
         </div>
-        <div id="status-pill" class="px-3 py-1 rounded-full text-xs font-medium bg-red-900/30 text-red-400 border border-red-500/50">
+        <div id="status-pill"
+            class="px-3 py-1 rounded-full text-xs font-medium bg-red-900/30 text-red-400 border border-red-500/50">
             Disconnected
         </div>
     </div>
 
     <!-- Main Grid -->
     <div class="grid grid-cols-12 gap-6">
-        
+
         <!-- Left Column: Telemetry -->
         <div class="col-span-12 lg:col-span-4 space-y-6">
             <!-- CPU Widget -->
@@ -94,44 +135,33 @@
                         <span id="disk-stat" class="text-gray-200 font-mono">0 / 0 GB</span>
                     </div>
                     <div class="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
-                        <div id="disk-bar" class="bg-cyan-500 h-full transition-all duration-500" style="width: 0%"></div>
+                        <div id="disk-bar" class="bg-cyan-500 h-full transition-all duration-500" style="width: 0%">
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Center/Right: Terminal & Actions -->
+        <!-- Center/Right: Actions -->
         <div class="col-span-12 lg:col-span-8 space-y-6">
-            <!-- Live Terminal -->
-            <div class="widget-glass p-4">
-                <div class="flex justify-between items-center mb-3">
-                    <div class="flex items-center gap-2">
-                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                        <span class="ml-2 text-xs font-mono text-gray-400">bash — root@hermes</span>
-                    </div>
-                    <span class="text-[10px] text-gray-500 uppercase">Real-time Stream</span>
-                </div>
-                <div class="terminal-container">
-                    <iframe id="terminal-frame" src="about:blank"></iframe>
-                </div>
-            </div>
-
             <!-- Quick Actions -->
             <div class="widget-glass p-5">
                 <h3 class="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-4">Quick Command Center</h3>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <button onclick="sendCmd('update')" class="btn-action p-3 rounded-lg text-xs text-center font-medium text-gray-300">
+                    <button onclick="sendCmd('update')"
+                        class="btn-action p-3 rounded-lg text-xs text-center font-medium text-gray-300">
                         Update System
                     </button>
-                    <button onclick="sendCmd('cleanup')" class="btn-action p-3 rounded-lg text-xs text-center font-medium text-gray-300">
+                    <button onclick="sendCmd('cleanup')"
+                        class="btn-action p-3 rounded-lg text-xs text-center font-medium text-gray-300">
                         Clear Cache
                     </button>
-                    <button onclick="sendCmd('backup')" class="btn-action p-3 rounded-lg text-xs text-center font-medium text-gray-300">
+                    <button onclick="sendCmd('backup')"
+                        class="btn-action p-3 rounded-lg text-xs text-center font-medium text-gray-300">
                         Run Backup
                     </button>
-                    <button onclick="sendCmd('restart')" class="btn-action p-3 rounded-lg text-xs text-center font-medium text-gray-300">
+                    <button onclick="sendCmd('restart')"
+                        class="btn-action p-3 rounded-lg text-xs text-center font-medium text-gray-300">
                         Restart Agent
                     </button>
                 </div>
@@ -141,8 +171,7 @@
 
     <script>
         const API_BASE = `http://${window.location.hostname}:5000`; // Backend port
-        const TERMINAL_URL = `http://${window.location.hostname}:7681`;
-        
+
         let cpuChart, ramChart;
         const MAX_DATA_POINTS = 20;
 
@@ -181,7 +210,6 @@
                 await fetch(`${API_BASE}/start`, { method: 'POST' });
                 document.getElementById('status-pill').innerText = 'Active';
                 document.getElementById('status-pill').className = 'px-3 py-1 rounded-full text-xs font-medium bg-green-900/30 text-green-400 border border-green-500/50';
-                document.getElementById('terminal-frame').src = TERMINAL_URL;
             } catch (e) {
                 console.error('Failed to start services:', e);
             }
@@ -226,8 +254,32 @@
             }
         }
 
-        function sendCmd(cmd) {
-            alert('Command sent to Agent: ' + cmd + '\\n(Integration pending in backend action handlers)');
+        function showToast(msg, type = '', duration = 5000) {
+            const toast = document.getElementById('toast');
+            toast.className = type;
+            toast.innerText = msg;
+            toast.style.display = 'block';
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(() => { toast.style.display = 'none'; }, duration);
+        }
+
+        async function sendCmd(cmd) {
+            const btns = document.querySelectorAll('.btn-action');
+            btns.forEach(b => b.disabled = true);
+            showToast(`⏳ Running: ${cmd}…`, '', 30000);
+            try {
+                const res = await fetch(`${API_BASE}/cmd/${cmd}`, { method: 'POST' });
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    showToast(`✅ ${cmd}\n${data.output}`, 'success', 7000);
+                } else {
+                    showToast(`❌ ${cmd} failed\n${data.message || 'Unknown error'}`, 'error', 7000);
+                }
+            } catch (e) {
+                showToast(`❌ Network error: ${e.message}`, 'error', 7000);
+            } finally {
+                btns.forEach(b => b.disabled = false);
+            }
         }
 
         window.onload = async () => {
@@ -241,4 +293,5 @@
         };
     </script>
 </body>
+
 </html>

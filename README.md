@@ -12,7 +12,6 @@ Built by **ZynthLab** • *Build. Scale. Secure.*
 
 * **Native Sidebar Integration:** Seamlessly injects a custom "DATA VIZ DASHBOARD" tab directly into the Hermes Agent UI.
 * **Real-time Metrics:** Live tracking of CPU load, Memory usage, and Disk storage.
-* **Integrated Terminal:** A dedicated live stream terminal interface for direct system access.
 * **Slash Command Support:** Type `/dashboard` in any Hermes chat session to retrieve a quick access link.
 * **Isolated Backend:** Runs a dedicated Python (Flask) backend on port `5000` to serve the UI and metrics independently.
 
@@ -75,8 +74,9 @@ pip install -r requirements.txt
 Ensure the background service is running on port 5000:
 
 ```bash
-nohup /opt/data/home/.hermes/plugins/data-viz-dashboard/backend/venv/bin/python3 server.py &
+nohup /opt/data/home/.hermes/plugins/data-viz-dashboard/backend/venv/bin/gunicorn -b 0.0.0.0:5000 --threads 4 server:app &
 ```
+
 
 **4. Restart Hermes Gateway:**
 Restart your Hermes Docker container or gateway service to allow it to discover the new `dashboard/manifest.json`:
