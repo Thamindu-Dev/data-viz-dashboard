@@ -20,10 +20,14 @@ COMMANDS = {
                "echo '=== Python ===' && python3 --version 2>&1 && "
                "(apt-get update -y 2>&1 | tail -3 || echo '[apt] need sudo to update packages')"],
     "cleanup": ["sh", "-c",
+                "cd ~ && "
                 "(pip cache purge 2>&1 || true) && "
+                "(sudo apt-get clean 2>&1 || echo '[apt] need sudo to clean apt cache') && "
+                "(sudo apt-get autoremove -y 2>&1 || echo '[apt] need sudo for autoremove') && "
+                "(sudo rm -rf /var/lib/apt/lists/* 2>&1 || echo '[apt] need sudo for apt lists') && "
+                "(sudo apt-get update 2>&1 | tail -3 || echo '[apt] need sudo for apt update') && "
                 "find /tmp -maxdepth 1 -type f -delete 2>/dev/null; "
-                "echo 'Pip cache purged. /tmp files cleared.' && "
-                "(apt-get clean -y 2>&1 || echo '[apt] need sudo to clean apt cache')"],
+                "echo 'Deep cleanup complete: cache cleared, apt updated.'"],
     "backup":  ["sh", "-c", "echo 'No backup script configured. Add your script to /opt/backup.sh'"],
     "restart": ["sh", "-c", "echo 'Restarting Flask backend in 1s...' && (sleep 1 && kill -15 $PPID) &"],
 }
