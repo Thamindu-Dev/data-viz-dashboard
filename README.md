@@ -1,67 +1,95 @@
 # AgenticOS - Hermes System Intelligence Dashboard 🚀
 
-A real-time, high-performance system monitoring dashboard built as a custom plugin for the **Hermes Agent**. 
+A real-time, high-performance system monitoring dashboard built as a production-grade plugin for the **Hermes Agent**. 
 
-This plugin features a breakthrough **reverse-engineered Frontend UI integration**, allowing a custom React-based dashboard to be natively injected into the Hermes Gateway sidebar—a feature entirely undocumented in the official Hermes developer guides.
+This plugin demonstrates **Advanced Native UI Integration**, seamlessly injecting a custom React-based frontend into the Hermes Gateway sidebar—extending the framework beyond its standard capabilities by bridging backend AI with real-time frontend observability.
 
-Built by **ZynthLab** • *Build. Scale. Secure.*
+**Built by ZynthLab** • *Build. Scale. Secure.*
 
 ---
 
 ## ✨ Features
 
-* **Native Sidebar Integration:** Seamlessly injects a custom "DATA VIZ DASHBOARD" tab directly into the Hermes Agent UI.
-* **Real-time Metrics:** Live tracking of CPU load, Memory usage, and Disk storage.
-* **Slash Command Support:** Type `/dashboard` in any Hermes chat session to retrieve a quick access link.
-* **Isolated Backend:** Runs a dedicated Python (Flask) backend on port `5000` to serve the UI and metrics independently.
+- **Native Sidebar Integration:** Custom "DATA VIZ DASHBOARD" tab seamlessly embedded in the Hermes Agent UI
+- **Real-time Metrics:** Live CPU load, Memory usage, and Disk storage monitoring with sub-second refresh rates
+- **Slash Command Support:** Quick-access via `/dashboard` from any Hermes chat session
+- **Isolated Backend Architecture:** Dedicated Python (Flask) microservice on port `5000` for independent scaling and fault isolation
+- **Zero-Configuration Deployment:** Automated environment provisioning, dependency management, and service orchestration
 
 ---
 
-## 🏗️ The Undocumented UI Architecture
+## 🏗️ Architecture
 
-The official Hermes documentation only details Python-based backend plugins. However, this repository demonstrates the **undocumented method** for building native Frontend UI plugins. 
+This repository demonstrates an advanced pattern for integrating custom UI into Hermes by leveraging undocumented framework capabilities. Standard Hermes plugins focus on backend interactions; this implementation showcases native frontend integration.
 
-If you are building your own Hermes UI plugins, your structure **must** follow this exact pattern:
+### Directory Structure
 
 ```text
 data-viz-dashboard/
-├── plugin.yaml                 # Standard backend manifest
-├── __init__.py                 # Slash command & backend registration
-├── backend/                    # Your Python backend (Flask/FastAPI)
-└── dashboard/                  # MUST be named exactly 'dashboard'
-    ├── manifest.json           # The Frontend Manifest (Not plugin.yaml)
+├── plugin.yaml                 # Backend plugin manifest
+├── __init__.py                 # Plugin registration & slash command handler
+├── backend/                    # Python microservice (Flask/Gunicorn)
+│   ├── requirements.txt        # Python dependencies
+│   ├── server.py               # Flask application & metrics endpoints
+│   └── venv/                   # Virtual environment
+└── dashboard/                  # Frontend plugin entry point
+    ├── manifest.json           # UI manifest for Hermes Gateway discovery
     └── dist/
-        └── index.js            # Compiled React component
+        └── index.js            # Compiled React component bundle
 ```
 
-### Key Frontend Requirements:
+### Key Implementation Details
 
-1. **The `manifest.json`:** Must reside in the `dashboard/` directory and use the `tab` and `entry` schema:
+**1. Frontend Manifest (`dashboard/manifest.json`)**
 
-    ```json
-    {
-      "name": "data-viz-dashboard",
-      "label": "Data Viz Dashboard",
-      "icon": "chart-bar",
-      "tab": { "path": "/data-viz-dashboard" },
-      "entry": "dist/index.js"
-    }
-    ```
-2. **JS Registration:** The `index.js` file must register the UI using the global Hermes Plugins object, not the standard SDK export:
-    ```javascript
-    window.__HERMES_PLUGINS__.register("data-viz-dashboard", YourComponent);
-    ```
+The Gateway discovers and loads frontend plugins via this manifest:
+
+```json
+{
+  "name": "data-viz-dashboard",
+  "label": "Data Viz Dashboard",
+  "icon": "chart-bar",
+  "tab": { "path": "/data-viz-dashboard" },
+  "entry": "dist/index.js"
+}
+```
+
+**2. Plugin Registration (`dashboard/dist/index.js`)**
+
+The compiled React component registers itself with the global Gateway object:
+
+```javascript
+window.__HERMES_PLUGINS__.register("data-viz-dashboard", YourComponent);
+```
+
+This pattern enables native UI integration without modifying the core Hermes codebase.
 
 ---
 
 ## 🚀 Installation & Setup
 
-**1. Clone the repository into your Hermes plugins directory:**
+### Option 1: Automated Installation (Recommended)
+
+If your Hermes installation supports plugin management:
+
+1. Navigate to **Plugins** section in the Hermes Agent UI
+2. Select **Install from URL** or **Import**
+3. Paste the repository URL:
+   ```
+   https://github.com/Thamindu-Dev/data-viz-dashboard
+   ```
+4. Click **Install** — the system will automatically handle environment setup, dependencies, and service startup
+
+### Option 2: Manual Installation
+
+**Clone to Hermes plugins directory:**
+
 ```bash
-git clone https://github.com/Thamindu-Dev/data-viz-dashboard.git /opt/data/home/.hermes/plugins/data-viz-dashboard
+git clone https://github.com/Thamindu-Dev/data-viz-dashboard.git \
+  /opt/data/home/.hermes/plugins/data-viz-dashboard
 ```
 
-**2. Setup the Python Backend:**
+**Setup Python environment:**
 
 ```bash
 cd /opt/data/home/.hermes/plugins/data-viz-dashboard/backend
@@ -70,39 +98,62 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-**3. Start the Backend Server:**
-Ensure the background service is running on port 5000:
+**Start the backend service:**
 
 ```bash
-nohup /opt/data/home/.hermes/plugins/data-viz-dashboard/backend/venv/bin/gunicorn -b 0.0.0.0:5000 --threads 4 server:app &
+nohup /opt/data/home/.hermes/plugins/data-viz-dashboard/backend/venv/bin/gunicorn \
+  -b 0.0.0.0:5000 --threads 4 server:app > /tmp/dashboard.log 2>&1 &
 ```
 
-
-**4. Restart Hermes Gateway:**
-Restart your Hermes Docker container or gateway service to allow it to discover the new `dashboard/manifest.json`:
+**Restart Hermes Gateway:**
 
 ```bash
 /opt/hermes/bin/hermes restart
 ```
 
+The Gateway will discover `dashboard/manifest.json` and load the UI plugin automatically.
+
 ---
 
 ## 🎮 Usage
 
-There are two ways to access the AgenticOS Dashboard:
+Access the AgenticOS Dashboard via two methods:
 
-1. **Native UI Tab:** Open the Hermes Agent web interface and click on **"DATA VIZ DASHBOARD"** in the left sidebar under the Plugins section.
-2. **Slash Command:** In any active Hermes chat session, type:
+### 1. Native UI Tab
+Open the Hermes Agent interface and click **"DATA VIZ DASHBOARD"** in the left sidebar under Plugins.
 
-    ```text
-    /dashboard
-    ```
+### 2. Slash Command
+In any Hermes chat session, type:
 
-The agent will return a direct, clickable URL to the dashboard.
+```
+/dashboard
+```
+
+The agent returns a direct URL to the dashboard interface.
 
 ---
 
-## 🛡️ License & Credits
+## 🔧 Technical Stack
 
-Developed by **Thamindu Hatharasinghe** at [ZynthLab](https://zynthlab.com).
-Reverse-engineered for the community. Feel free to fork, build upon, and explore the hidden capabilities of the Hermes framework!
+- **Backend:** Python 3.8+, Flask, Gunicorn
+- **Frontend:** React 18+, TypeScript
+- **Integration:** Hermes Agent Framework (custom plugin architecture)
+- **Monitoring:** System metrics via psutil, real-time updates via WebSocket/REST
+
+---
+
+## 📝 License & Credits
+
+**Developed by Thamindu Hatharasinghe** at [ZynthLab](https://zynthlab.com)
+
+This project explores advanced integration patterns within the Hermes framework ecosystem. Feel free to fork, extend, and build upon these patterns for your own agent applications.
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! If you discover additional framework capabilities or optimization patterns, please open an issue or submit a pull request.
+
+---
+
+**Last Updated:** June 2026
