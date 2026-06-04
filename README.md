@@ -6,6 +6,12 @@ A production-ready system monitoring dashboard plugin that demonstrates how to i
 
 ---
 
+## 📸 Dashboard Preview
+
+![Data Visualization Dashboard Screenshot](https://raw.githubusercontent.com/Thamindu-Dev/data-viz-dashboard/main/Screenshot.png)
+
+---
+
 ## ✨ Features
 
 - **Real-time Metrics Dashboard:** Live CPU load, Memory usage, and Disk storage visualization
