@@ -18,7 +18,8 @@ COMMANDS = {
                "echo '=== OS ===' && cat /etc/os-release | grep PRETTY | cut -d= -f2 && "
                "echo '=== Uptime ===' && uptime && "
                "echo '=== Python ===' && python3 --version 2>&1 && "
-               "(apt-get update -y 2>&1 | tail -3 || echo '[apt] need sudo to update packages')"],
+               "echo '=== Disk Usage ===' && df -h / | tail -1 && "
+               "echo '=== Memory ===' && free -h | grep Mem"],
     "cleanup": ["sh", "-c",
                 "cd /home && "
                 "pip cache purge 2>&1 || true; "
@@ -26,7 +27,11 @@ COMMANDS = {
                 "echo 'User-level cleanup complete:' && "
                 "echo '  ✓ Pip cache purged' && "
                 "echo '  ✓ /tmp files cleared' && "
-                "echo '  ⚠ For system apt cleanup, run as root: sudo apt-get clean && sudo apt-get autoremove -y'"],
+                "echo '' && "
+                "echo 'For system-level apt cleanup (requires root):' && "
+                "echo '  sudo apt-get clean' && "
+                "echo '  sudo apt-get autoremove -y' && "
+                "echo '  sudo apt-get update'"],
     "backup":  ["sh", "-c", "echo 'No backup script configured. Add your script to /opt/backup.sh'"],
     "restart": ["sh", "-c", "echo 'Restarting Flask backend in 1s...' && (sleep 1 && kill -15 $PPID) &"],
 }
